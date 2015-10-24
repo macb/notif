@@ -10,7 +10,7 @@ type Watcher struct {
 	wp   *watch.WatchPlan
 }
 
-func NewWatcher(addr string, watchType string, drain chan<- interface{}) (*Watcher, error) {
+func NewWatcher(addr string, watchType string, drain chan<- *consulapi.HealthCheck) (*Watcher, error) {
 	wp, err := watch.Parse(map[string]interface{}{
 		"type": watchType,
 	})
@@ -24,8 +24,6 @@ func NewWatcher(addr string, watchType string, drain chan<- interface{}) (*Watch
 			for _, i := range d {
 				drain <- i
 			}
-		default:
-			drain <- data
 		}
 	}
 
@@ -37,4 +35,9 @@ func NewWatcher(addr string, watchType string, drain chan<- interface{}) (*Watch
 
 func (w *Watcher) Run() {
 	w.wp.Run(w.addr)
+}
+
+type Notifier interface {
+	Trigger(incidentKey string, url string, desc string, ed EventDetails) (*NotifierResponse, error)
+	Resolve(incidentKey string, output string) (*NotifierResponse, error)
 }

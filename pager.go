@@ -40,13 +40,13 @@ type EventDetails struct {
 	CheckOutput string `json:"check_output"`
 }
 
-type PagerResponse struct {
+type NotifierResponse struct {
 	Status      string `json:"status"`
 	Message     string `json:"message"`
 	IncidentKey string `json:"incident_key"`
 }
 
-func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (*PagerResponse, error) {
+func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (*NotifierResponse, error) {
 	t := trigger{
 		ServiceKey:  p.key,
 		EventType:   "trigger",
@@ -68,7 +68,7 @@ func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (
 	}
 	defer resp.Body.Close()
 
-	pr := new(PagerResponse)
+	pr := new(NotifierResponse)
 	err = json.NewDecoder(resp.Body).Decode(pr)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (
 	return pr, err
 }
 
-func (p *Pager) Resolve(incidentKey, description string) (*PagerResponse, error) {
+func (p *Pager) Resolve(incidentKey, description string) (*NotifierResponse, error) {
 	t := trigger{
 		ServiceKey:  p.key,
 		EventType:   "resolve",
@@ -96,7 +96,7 @@ func (p *Pager) Resolve(incidentKey, description string) (*PagerResponse, error)
 	}
 	defer resp.Body.Close()
 
-	pr := new(PagerResponse)
+	pr := new(NotifierResponse)
 	err = json.NewDecoder(resp.Body).Decode(pr)
 	if err != nil {
 		return nil, err
