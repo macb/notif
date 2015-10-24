@@ -1,0 +1,61 @@
+consulserver:
+  image: consul
+  hostname: consulserver
+  entrypoint:
+    - "/bin/consul"
+    - "agent"
+    - "-data-dir=."
+    - "-config-dir=/tmp"
+    - "-server"
+    - "-bootstrap"
+    - "-client=0.0.0.0"
+consulclient1:
+  image: consul
+  hostname: consulclient1
+  entrypoint:
+    - "/bin/consul"
+    - "agent"
+    - "-data-dir=."
+    - "-config-dir=/tmp"
+    - "-client=0.0.0.0"
+    - "-join=consulserver"
+  links:
+    - consulserver
+consulclient2:
+  image: consul
+  hostname: consulclient2
+  entrypoint:
+    - "/bin/consul"
+    - "agent"
+    - "-data-dir=."
+    - "-config-dir=/tmp"
+    - "-client=0.0.0.0"
+    - "-join=consulserver"
+  links:
+    - consulserver
+consulclient3:
+  image: consul
+  hostname: consulclient3
+  entrypoint:
+    - "/bin/consul"
+    - "agent"
+    - "-data-dir=."
+    - "-config-dir=/tmp"
+    - "-client=0.0.0.0"
+    - "-join=consulserver"
+  links:
+    - consulserver
+notif1:
+  build: .
+  links:
+    - consulserver
+  environment:
+    - "CONSUL_KV_ADDR=consulserver:8500"
+    - "CONSUL_WATCH_ADDR=consulserver:8500"
+notif2:
+  build: .
+  links:
+    - consulserver
+  environment:
+    - "CONSUL_KV_ADDR=consulserver:8500"
+    - "CONSUL_WATCH_ADDR=consulserver:8500"
