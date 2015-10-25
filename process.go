@@ -40,13 +40,36 @@ func (p *Processor) Run() {
 
 func (p *Processor) processHealthCheck(hc *consulapi.HealthCheck) {
 	ss := serviceStatus(hc.Node, hc.CheckID)
+	lockKey := serviceStatus(hc.Node, hc.CheckID) + "/lock"
+
+	lock, err := p.cc.LockKey(lockKey)
+	if err != nil {
+		p.log.WithFields(logrus.Fields{
+			"err":        err,
+			"consul.key": lockKey,
+		}).Error("failed to build lock key")
+		return
+	}
+
+	_, err = lock.Lock(nil)
+	if err != nil {
+		p.log.WithFields(logrus.Fields{
+			"err":        err,
+			"consul.key": lockKey,
+		}).Error("failed to get lock")
+		return
+	}
+	defer lock.Unlock()
+	p.log.WithFields(logrus.Fields{
+		"consul.key": lockKey,
+	}).Debug("locked key")
 
 	storedCheck, process, err := p.findCheck(hc)
 	if err != nil {
 		p.log.WithFields(logrus.Fields{
 			"err":            err,
 			"service.status": ss,
-		})
+		}).Error("failed to find check")
 		return
 	}
 
@@ -144,11 +167,15 @@ func (p *Processor) findCheck(hc *consulapi.HealthCheck) (*check, bool, error) {
 		err = json.Unmarshal(res.Value, storedCheck)
 		if err != nil {
 			p.log.WithField("err", err).Error("failed to unmarshal check")
-			return nil, false, err
 		}
 	}
 
 	if storedCheck.Status == hc.Status {
+		p.log.WithFields(logrus.Fields{
+			"memoize.key": ss,
+			"sc.status":   storedCheck.Status,
+			"hc.status":   hc.Status,
+		}).Debug("stored check matched healthcheck")
 		p.memoize(ss, storedCheck)
 	}
 
