@@ -39,6 +39,10 @@ func (p *Processor) Run() {
 }
 
 func (p *Processor) processHealthCheck(hc *consulapi.HealthCheck) {
+	if ignoredCheckID(hc.CheckID) {
+		return
+	}
+
 	ss := serviceStatus(hc.Node, hc.CheckID)
 	lockKey := serviceStatus(hc.Node, hc.CheckID) + "/lock"
 
@@ -95,13 +99,17 @@ func (p *Processor) processHealthCheck(hc *consulapi.HealthCheck) {
 			return
 		}
 	case "passing":
-		_, err := p.resolve(hc)
-		if err != nil {
-			p.log.WithFields(logrus.Fields{
-				"err":          err,
-				"incident.key": ss,
-			}).Error("failed to notify")
-			return
+		// We don't want to resolve if the stored check does not record having triggered.
+		// This is hit mostly when a new service is introduced.
+		if storedCheck.Status != "" {
+			_, err := p.resolve(hc)
+			if err != nil {
+				p.log.WithFields(logrus.Fields{
+					"err":          err,
+					"incident.key": ss,
+				}).Error("failed to notify")
+				return
+			}
 		}
 	}
 
@@ -162,6 +170,7 @@ func (p *Processor) findCheck(hc *consulapi.HealthCheck) (*check, bool, error) {
 		return nil, false, err
 	}
 
+	processCheck := true
 	storedCheck := new(check)
 	if res != nil {
 		err = json.Unmarshal(res.Value, storedCheck)
@@ -171,6 +180,7 @@ func (p *Processor) findCheck(hc *consulapi.HealthCheck) (*check, bool, error) {
 	}
 
 	if storedCheck.Status == hc.Status {
+		processCheck = false
 		p.log.WithFields(logrus.Fields{
 			"memoize.key": ss,
 			"sc.status":   storedCheck.Status,
@@ -179,7 +189,7 @@ func (p *Processor) findCheck(hc *consulapi.HealthCheck) (*check, bool, error) {
 		p.memoize(ss, storedCheck)
 	}
 
-	return storedCheck, storedCheck.Status != hc.Status, nil
+	return storedCheck, processCheck, nil
 }
 
 func (p *Processor) storeCheck(key string, ck *check) (err error) {
