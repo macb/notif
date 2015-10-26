@@ -87,6 +87,9 @@ func (p *Processor) processHealthCheck(hc *consulapi.HealthCheck) {
 
 	switch hc.Status {
 	case "critical":
+		p.log.WithFields(logrus.Fields{
+			"service.status": ss,
+		}).Debug("notifying")
 		_, err := p.notify(hc)
 		if err != nil {
 			// TODO(macb): This is bad. We didn't notify about a failure. Let's not
@@ -102,6 +105,9 @@ func (p *Processor) processHealthCheck(hc *consulapi.HealthCheck) {
 		// We don't want to resolve if the stored check does not record having triggered.
 		// This is hit mostly when a new service is introduced.
 		if storedCheck.Status != "" {
+			p.log.WithFields(logrus.Fields{
+				"service.status": ss,
+			}).Debug("resolving")
 			_, err := p.resolve(hc)
 			if err != nil {
 				p.log.WithFields(logrus.Fields{

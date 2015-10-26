@@ -52,6 +52,9 @@ notif1:
   environment:
     - "CONSUL_KV_ADDR=consulserver:8500"
     - "CONSUL_WATCH_ADDR=consulserver:8500"
+    - SLACK_WEBHOOK_URL
+    - SLACK_CHANNEL
+    - SLACK_ICON
 notif2:
   build: .
   links:
@@ -59,3 +62,6 @@ notif2:
   environment:
     - "CONSUL_KV_ADDR=consulserver:8500"
     - "CONSUL_WATCH_ADDR=consulserver:8500"
+    - SLACK_WEBHOOK_URL
+    - SLACK_CHANNEL
+    - SLACK_ICON
