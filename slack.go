@@ -35,6 +35,7 @@ type slackMessage struct {
 type slackAttachment struct {
 	Fallback string        `json:"fallback"`
 	Pretext  string        `json:"pretext"`
+	Color    string        `json:"color"`
 	Fields   []slackFields `json:"fields"`
 }
 
@@ -51,8 +52,9 @@ func (s *SlackNotifier) Trigger(incidentKey, url, description string, ed EventDe
 		IconEmoji: s.iconEmoji,
 		Attachments: []slackAttachment{
 			{
+				Color:    "#FF0000",
 				Fallback: fmt.Sprintf("Failing check for %s on %s. See <%s>", ed.ServiceName, ed.Hostname, url),
-				Pretext:  fmt.Sprintf(":siren: Critical health check :siren:", ed.ServiceName, ed.Hostname),
+				Pretext:  ":red_circle: Critical health check",
 				Fields: []slackFields{
 					{
 						Title: "Service Impacted",
@@ -102,8 +104,9 @@ func (s *SlackNotifier) Resolve(incidentKey, url, description string, ed EventDe
 		IconEmoji: s.iconEmoji,
 		Attachments: []slackAttachment{
 			{
+				Color:    "#00FF00",
 				Fallback: fmt.Sprintf("Resolved check for %s on %s. See <%s>", ed.ServiceName, ed.Hostname, url),
-				Pretext:  fmt.Sprintf("Resolved health check", ed.ServiceName, ed.Hostname),
+				Pretext:  ":white_check_mark: Resolved health check",
 				Fields: []slackFields{
 					{
 						Title: "Service Impacted",
