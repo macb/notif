@@ -7,6 +7,6 @@ func (p *NoopNotifier) Trigger(key, url, desc string, ed EventDetails) (*Notifie
 	return &NotifierResponse{}, nil
 }
 
-func (p *NoopNotifier) Resolve(incidentKey, description string) (*NotifierResponse, error) {
+func (p *NoopNotifier) Resolve(key, url, desc string, ed EventDetails) (*NotifierResponse, error) {
 	return &NotifierResponse{}, nil
 }

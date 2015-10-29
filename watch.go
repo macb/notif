@@ -36,8 +36,3 @@ func NewWatcher(addr string, watchType string, drain chan<- *consulapi.HealthChe
 func (w *Watcher) Run() {
 	w.wp.Run(w.addr)
 }
-
-type Notifier interface {
-	Trigger(incidentKey string, url string, desc string, ed EventDetails) (*NotifierResponse, error)
-	Resolve(incidentKey string, output string) (*NotifierResponse, error)
-}

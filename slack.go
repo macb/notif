@@ -51,12 +51,32 @@ func (s *SlackNotifier) Trigger(incidentKey, url, description string, ed EventDe
 		IconEmoji: s.iconEmoji,
 		Attachments: []slackAttachment{
 			{
-				Fallback: fmt.Sprintf("Failing check for %s on %s. See %s", ed.ServiceName, ed.Hostname, url),
-				Pretext:  fmt.Sprintf("Failing check for %s on %s", ed.ServiceName, ed.Hostname),
+				Fallback: fmt.Sprintf("Failing check for %s on %s. See <%s>", ed.ServiceName, ed.Hostname, url),
+				Pretext:  fmt.Sprintf(":siren: Critical health check :siren:", ed.ServiceName, ed.Hostname),
 				Fields: []slackFields{
 					{
+						Title: "Service Impacted",
+						Value: ed.ServiceName,
+						Short: false,
+					},
+					{
 						Title: "URL",
-						Value: fmt.Sprintf("<%s>", url),
+						Value: url,
+						Short: false,
+					},
+					{
+						Title: "Check Name",
+						Value: ed.CheckName,
+						Short: true,
+					},
+					{
+						Title: "Check ID",
+						Value: ed.CheckID,
+						Short: true,
+					},
+					{
+						Title: "Hostname",
+						Value: ed.Hostname,
 						Short: false,
 					},
 				},
@@ -75,19 +95,39 @@ func (s *SlackNotifier) Trigger(incidentKey, url, description string, ed EventDe
 	}, nil
 }
 
-func (s *SlackNotifier) Resolve(incidentKey, description string) (*NotifierResponse, error) {
+func (s *SlackNotifier) Resolve(incidentKey, url, description string, ed EventDetails) (*NotifierResponse, error) {
 	msg := slackMessage{
 		Username:  s.username,
 		Channel:   s.channel,
 		IconEmoji: s.iconEmoji,
 		Attachments: []slackAttachment{
 			{
-				Fallback: fmt.Sprintf("Passing check for %s.", incidentKey),
-				Pretext:  fmt.Sprintf("Passing check for %s. %s", incidentKey, description),
+				Fallback: fmt.Sprintf("Resolved check for %s on %s. See <%s>", ed.ServiceName, ed.Hostname, url),
+				Pretext:  fmt.Sprintf("Resolved health check", ed.ServiceName, ed.Hostname),
 				Fields: []slackFields{
 					{
-						Title: "Description",
-						Value: description,
+						Title: "Service Impacted",
+						Value: ed.ServiceName,
+						Short: false,
+					},
+					{
+						Title: "URL",
+						Value: url,
+						Short: false,
+					},
+					{
+						Title: "Check Name",
+						Value: ed.CheckName,
+						Short: true,
+					},
+					{
+						Title: "Check ID",
+						Value: ed.CheckID,
+						Short: true,
+					},
+					{
+						Title: "Hostname",
+						Value: ed.Hostname,
 						Short: false,
 					},
 				},

@@ -34,18 +34,6 @@ type trigger struct {
 	Details     EventDetails `json:"details"`
 }
 
-type EventDetails struct {
-	Hostname    string `json:"hostname"`
-	ServiceName string `json:"service_name"`
-	CheckOutput string `json:"check_output"`
-}
-
-type NotifierResponse struct {
-	Status      string `json:"status"`
-	Message     string `json:"message"`
-	IncidentKey string `json:"incident_key"`
-}
-
 func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (*NotifierResponse, error) {
 	t := trigger{
 		ServiceKey:  p.key,
@@ -77,7 +65,7 @@ func (p *Pager) Trigger(incidentKey, url, description string, ed EventDetails) (
 	return pr, err
 }
 
-func (p *Pager) Resolve(incidentKey, description string) (*NotifierResponse, error) {
+func (p *Pager) Resolve(incidentKey, url, description string, ed EventDetails) (*NotifierResponse, error) {
 	t := trigger{
 		ServiceKey:  p.key,
 		EventType:   "resolve",

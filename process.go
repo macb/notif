@@ -138,12 +138,27 @@ func (p *Processor) notify(hc *consulapi.HealthCheck) (*NotifierResponse, error)
 	return p.notifier.Trigger(ik, u, desc, EventDetails{
 		Hostname:    hc.Node,
 		ServiceName: hc.ServiceName,
+		CheckName:   hc.Name,
+		CheckID:     hc.CheckID,
 		CheckOutput: hc.Output,
 	})
 }
 
 func (p *Processor) resolve(hc *consulapi.HealthCheck) (*NotifierResponse, error) {
-	return p.notifier.Resolve(serviceStatus(hc.Node, hc.CheckID), hc.Output)
+	// TODO(macb): Supplied from the processor. Hardcoded values bad.
+	u := fmt.Sprintf("http://127.0.0.1:8500/ui/#/dc1/nodes/%s", hc.Node)
+
+	// TODO(macb): Allow format to be templatable.
+	desc := fmt.Sprintf("%s: %s resolved for %s", hc.Node, hc.CheckID, hc.ServiceName)
+
+	ik := serviceStatus(hc.Node, hc.CheckID)
+	return p.notifier.Resolve(ik, u, desc, EventDetails{
+		Hostname:    hc.Node,
+		ServiceName: hc.ServiceName,
+		CheckName:   hc.Name,
+		CheckID:     hc.CheckID,
+		CheckOutput: hc.Output,
+	})
 }
 
 // Translates the consul health check into a notif check and determines if we should process it.
